@@ -295,6 +295,19 @@
 
             <p id="mode-help" class="mode-help">Mode classique : chaque pays donne 4 questions — pays, drapeau, chef d’État et capitale.</p>
 
+            <div class="player-name-field">
+                <label for="player-name">Ton pseudo</label>
+                <input
+                    id="player-name"
+                    type="text"
+                    placeholder="Entre ton pseudo..."
+                    maxlength="20"
+                    autocomplete="nickname"
+                    required
+                >
+                <small id="player-name-feedback" class="player-name-feedback"></small>
+            </div>
+
             <button
                 id="start-button"
                 class="main-button"
@@ -307,6 +320,14 @@
             <div class="best-score">
                 🏆 Meilleur score :
                 <strong id="best-score-home">0</strong>/<span id="best-score-max">40</span>
+            </div>
+
+            <div class="leaderboard-preview">
+                <div class="leaderboard-heading">
+                    <h3>Classement local</h3>
+                    <span>Meilleurs résultats sur cet appareil</span>
+                </div>
+                <div id="leaderboard-home"></div>
             </div>
 
         </div>
@@ -626,7 +647,7 @@
 
 
             <p class="result-subtitle">
-                Voici ton résultat.
+                Voici ton résultat, <strong id="result-player-name"></strong>.
             </p>
 
 
@@ -676,6 +697,11 @@
                     <small>Capitales</small>
                 </div>
 
+            </div>
+
+            <div class="leaderboard-results">
+                <h3>Classement local</h3>
+                <div id="leaderboard-results-list"></div>
             </div>
 
 

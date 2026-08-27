@@ -544,6 +544,8 @@ let score = 0;
 
 let gameId = 0;
 
+let playerName = "";
+
 let scores = {
     country: 0,
     flag: 0,
@@ -659,6 +661,23 @@ const questionTitle =
 const countryInput =
     document.getElementById("country-input");
 
+const playerNameInput =
+    document.getElementById("player-name");
+
+const playerNameFeedback =
+    document.getElementById("player-name-feedback");
+
+const leaderboardHome =
+    document.getElementById("leaderboard-home");
+
+const leaderboardResultsList =
+    document.getElementById("leaderboard-results-list");
+
+const resultPlayerName =
+    document.getElementById("result-player-name");
+
+const LEADERBOARD_KEY = "revision_r3_leaderboard";
+
 
 /* =========================================================
    BOUTONS
@@ -764,6 +783,16 @@ countryInput.addEventListener(
 
 function startGame() {
 
+    playerName = playerNameInput.value.trim();
+    if (!playerName) {
+        playerNameFeedback.textContent = "Indique ton pseudo avant de commencer.";
+        playerNameFeedback.className = "player-name-feedback error";
+        playerNameInput.focus();
+        return;
+    }
+
+    playerNameFeedback.textContent = "";
+    playerNameFeedback.className = "player-name-feedback";
     gameId++;
     document.body.classList.add("quiz-mode-active");
     GAME_MODE = gameModeSelect.value;
@@ -1618,6 +1647,8 @@ function showResults() {
     ).textContent =
         score;
 
+    resultPlayerName.textContent = playerName;
+
     const maxScore = GAME_MODE === "mixed" ? TOTAL_ROUNDS * 4 : TOTAL_ROUNDS;
     const resultTotal = document.getElementById("result-total");
     if (resultTotal) resultTotal.textContent = maxScore;
@@ -1686,6 +1717,8 @@ function showResults() {
 
 
     saveBestScore();
+    saveLeaderboardScore();
+    renderLeaderboard(leaderboardResultsList);
 
     displayMistakes();
 
@@ -1950,6 +1983,63 @@ function loadBestScore() {
 }
 
 
+function getLeaderboard() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+        return Array.isArray(saved) ? saved : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+
+function saveLeaderboardScore() {
+    const leaderboard = getLeaderboard();
+    leaderboard.push({
+        name: playerName,
+        score,
+        maxScore: GAME_MODE === "mixed" ? TOTAL_ROUNDS * 4 : TOTAL_ROUNDS,
+        date: new Date().toLocaleDateString("fr-FR")
+    });
+
+    leaderboard.sort((first, second) => {
+        const firstRate = first.maxScore ? first.score / first.maxScore : 0;
+        const secondRate = second.maxScore ? second.score / second.maxScore : 0;
+        return secondRate - firstRate || second.score - first.score;
+    });
+
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard.slice(0, 10)));
+}
+
+
+function renderLeaderboard(container) {
+    if (!container) return;
+
+    const leaderboard = getLeaderboard();
+    container.innerHTML = "";
+
+    if (leaderboard.length === 0) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "leaderboard-empty";
+        emptyState.textContent = "Aucun résultat enregistré pour le moment.";
+        container.appendChild(emptyState);
+        return;
+    }
+
+    leaderboard.forEach((entry, index) => {
+        const row = document.createElement("div");
+        row.className = "leaderboard-row";
+        row.innerHTML = `
+            <strong class="leaderboard-rank">${index + 1}</strong>
+            <span class="leaderboard-name"></span>
+            <span class="leaderboard-score">${entry.score}/${entry.maxScore}</span>
+        `;
+        row.querySelector(".leaderboard-name").textContent = entry.name;
+        container.appendChild(row);
+    });
+}
+
+
 /* =========================================================
    ACCUEIL
    ========================================================= */
@@ -2187,3 +2277,4 @@ function renderCourses() {
 
 loadBestScore();
 renderDatabase();
+renderLeaderboard(leaderboardHome);
