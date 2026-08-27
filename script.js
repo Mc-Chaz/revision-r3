@@ -559,7 +559,8 @@ function loadCompleteCountryDatabase() {
                         name: frenchName,
                         aliases: [frenchName, country.name.common],
                         capital: country.capital?.[0] || "Capitale à vérifier",
-                        leader: `À vérifier — ${frenchName}`
+                        leader: `À vérifier — ${frenchName}`,
+                        leaders: [`À vérifier — ${frenchName}`]
                     };
                 });
 
@@ -2235,7 +2236,7 @@ function showCountryDetails(country) {
             <div>
                 <h3>Dirigeants importants</h3>
                 <ul>
-                    <li>${country.leader}</li>
+                    ${(country.leaders || [country.leader]).map(leader => `<li>${leader}</li>`).join("")}
                 </ul>
             </div>
             <div>
