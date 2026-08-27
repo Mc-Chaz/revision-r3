@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="description"
+        content="Revison R3 : quiz et ressources de révision autour de la culture militaire et personnelle."
+    >
+
+    <meta name="theme-color" content="#17191d">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Revison R3 — Culture militaire et personnelle</title>
+
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+</head>
+
+
+<body>
+
+<header class="topbar">
+
+    <a
+        id="brand-home"
+        class="brand"
+        href="#home-screen"
+        aria-label="Revenir à l'accueil de Revison R3"
+    >
+
+        <div class="brand-icon">
+            <img src="logo.png" alt="Logo Revison R3">
+        </div>
+
+        <div>
+            <h1>Revison R3</h1>
+            <span>Culture militaire et personnelle</span>
+        </div>
+
+    </a>
+
+
+    <div class="top-stats">
+
+        <div class="stat">
+            <span>Manche</span>
+            <strong>
+                <span id="round-number">1</span>/<span id="total-rounds">10</span>
+            </strong>
+        </div>
+
+        <div class="stat">
+            <span>Score</span>
+            <strong id="score">0</strong>
+        </div>
+
+    </div>
+
+</header>
+
+
+<nav class="section-tabs" aria-label="Sections du site">
+    <button
+        id="quiz-tab"
+        class="section-tab active"
+        type="button"
+        aria-selected="true"
+    >
+        🎯 Quiz
+    </button>
+
+    <button
+        id="database-tab"
+        class="section-tab"
+        type="button"
+        aria-selected="false"
+    >
+        📚 Base de données
+    </button>
+    
+        <button
+            id="courses-tab"
+            class="section-tab"
+            type="button"
+            aria-selected="false"
+        >
+            📂 Banque de cours
+        </button>
+</nav>
+
+
+<main class="app">
+
+    <!-- =========================
+         BANQUE DE COURS
+         ========================= -->
+    
+    <section
+        id="courses-screen"
+        class="screen"
+    >
+    
+        <div class="database-header">
+            <div>
+                <span class="eyebrow">ORGANISATION</span>
+                <h2>Banque de cours</h2>
+                <p>Classe tes supports de révision et retrouve-les rapidement.</p>
+            </div>
+        </div>
+    
+        <div class="course-layout">
+            <form id="course-form" class="course-form">
+                <h3>Ajouter un cours</h3>
+    
+                <label for="course-title">Titre du cours</label>
+                <input id="course-title" type="text" placeholder="Ex. Les grandes batailles" required>
+    
+                <label for="course-category">Sous-partie</label>
+                <select id="course-category">
+                    <option value="Combat">Combat</option>
+                    <option value="ISTC / AIT">ISTC / AIT</option>
+                    <option value="GENIE NRBC">GENIE NRBC</option>
+                    <option value="TRANS">TRANS</option>
+                    <option value="DRONE">DRONE</option>
+                    <option value="TOPOGRAPHIE">TOPOGRAPHIE</option>
+                    <option value="RENS">RENS</option>
+                    <option value="TAP">TAP</option>
+                    <option value="SAN">SAN</option>
+                </select>
+    
+                <label for="course-file">Fichier PDF, Excel ou Word</label>
+                <input
+                    id="course-file"
+                    type="file"
+                    accept=".pdf,.xls,.xlsx,.doc,.docx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    required
+                >
+    
+                <button class="main-button" type="submit">Ajouter à la banque <span>＋</span></button>
+                <p id="course-feedback" class="course-feedback" aria-live="polite"></p>
+            </form>
+    
+            <div class="course-library">
+                <div class="course-library-header">
+                    <h3>Mes supports</h3>
+                    <label for="course-filter">Filtrer</label>
+                    <select id="course-filter">
+                        <option value="all">Toutes les sous-parties</option>
+                        <option value="Combat">Combat</option>
+                        <option value="ISTC / AIT">ISTC / AIT</option>
+                        <option value="GENIE NRBC">GENIE NRBC</option>
+                        <option value="TRANS">TRANS</option>
+                        <option value="DRONE">DRONE</option>
+                        <option value="TOPOGRAPHIE">TOPOGRAPHIE</option>
+                        <option value="RENS">RENS</option>
+                        <option value="TAP">TAP</option>
+                        <option value="SAN">SAN</option>
+                    </select>
+                </div>
+                <div id="course-list" class="course-list" aria-live="polite"></div>
+            </div>
+        </div>
+    
+    </section>
+    
+    
+    <div
+        id="country-modal"
+        class="country-modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="country-modal-title"
+    >
+        <div class="country-modal-panel">
+            <button id="country-modal-close" class="modal-close" type="button" aria-label="Fermer">×</button>
+            <div id="country-modal-content"></div>
+        </div>
+    </div>
+    
+
+    <!-- =========================
+         ACCUEIL
+         ========================= -->
+
+    <section
+        id="home-screen"
+        class="screen active"
+    >
+
+        <div class="hero-card">
+
+            <div class="hero-glow"></div>
+
+            <div class="hero-earth">
+                <img src="logo.png" alt="Logo Revison R3">
+            </div>
+
+            <div class="eyebrow">
+                RÉVISION • CULTURE MILITAIRE • PERSONNELLE
+            </div>
+
+            <h2>
+                Jusqu'où vont<br>
+                <span>tes connaissances ?</span>
+            </h2>
+
+            <p>
+                Identifie les pays du monde, leurs drapeaux,
+                leurs capitales et leurs chefs d'État.
+            </p>
+
+
+            <div class="features">
+
+                <div class="feature">
+                    <span>🗺️</span>
+
+                    <div>
+                        <strong>Carte</strong>
+                        <small>Identifier le pays</small>
+                    </div>
+                </div>
+
+
+                <div class="feature">
+                    <span>🏳️</span>
+
+                    <div>
+                        <strong>Drapeau</strong>
+                        <small>4 propositions</small>
+                    </div>
+                </div>
+
+
+                <div class="feature">
+                    <span>👤</span>
+
+                    <div>
+                        <strong>Chef d'État</strong>
+                        <small>4 propositions</small>
+                    </div>
+                </div>
+
+
+                <div class="feature">
+                    <span>🏛️</span>
+
+                    <div>
+                        <strong>Capitale</strong>
+                        <small>4 propositions</small>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="game-settings">
+                <div class="setting-group">
+                    <label for="game-mode">Mode de jeu</label>
+                    <select id="game-mode">
+                        <option value="mixed" selected>Classique — Pays + drapeau + chef d’État + capitale</option>
+                        <option value="country">🗺️ Pays à retrouver</option>
+                        <option value="flag">🏳️ Drapeaux</option>
+                        <option value="capital">🏛️ Capitales</option>
+                        <option value="leader">👤 Chefs d'État</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="question-count" id="question-count-label">Nombre de questions</label>
+                    <select id="question-count">
+                        <option value="5">5 questions</option>
+                        <option value="10" selected>10 questions</option>
+                        <option value="20">20 questions</option>
+                        <option value="30">30 questions</option>
+                        <option value="50">50 questions</option>
+                        <option value="195">195 questions</option>
+                    </select>
+                </div>
+            </div>
+
+            <p id="mode-help" class="mode-help">Mode classique : chaque pays donne 4 questions — pays, drapeau, chef d’État et capitale.</p>
+
+            <button
+                id="start-button"
+                class="main-button"
+            >
+                Commencer la partie
+                <span>→</span>
+            </button>
+
+
+            <div class="best-score">
+                🏆 Meilleur score :
+                <strong id="best-score-home">0</strong>/<span id="best-score-max">40</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         BASE DE DONNÉES
+         ========================= -->
+
+    <section
+        id="database-screen"
+        class="screen"
+    >
+
+        <div class="database-header">
+            <div>
+                <span class="eyebrow">RÉFÉRENCE</span>
+                <h2>Base de données</h2>
+                <p>Retrouve rapidement les informations essentielles de chaque pays.</p>
+            </div>
+
+            <div class="database-count" aria-live="polite">
+                <strong id="database-count">0</strong>
+                <span>pays affichés</span>
+            </div>
+        </div>
+
+        <div class="database-toolbar">
+            <label for="database-search">Rechercher un pays, une capitale ou un dirigeant</label>
+            <input
+                id="database-search"
+                type="search"
+                placeholder="Ex. France, Paris..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div
+            id="database-grid"
+            class="database-grid"
+            aria-live="polite"
+        ></div>
+
+    </section>
+
+
+
+    <!-- =========================
+         QUIZ
+         ========================= -->
+
+    <section
+        id="quiz-screen"
+        class="screen"
+    >
+
+        <div class="quiz-card">
+
+
+            <div class="progress-area">
+
+                <div class="progress-text">
+
+                    <span id="stage-label">
+                        IDENTIFICATION
+                    </span>
+
+                    <strong>
+                        <span id="stage-number">1</span>/1
+                    </strong>
+
+                </div>
+
+
+                <div class="progress-bar">
+
+                    <div
+                        id="progress-fill"
+                        class="progress-fill"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="question-header">
+
+                <div
+                    id="question-icon"
+                    class="question-icon"
+                >
+                    🗺️
+                </div>
+
+
+                <div>
+
+                    <span
+                        id="question-category"
+                        class="question-category"
+                    >
+                        GÉOGRAPHIE
+                    </span>
+
+                    <h2 id="question-title">
+                        Quel est ce pays ?
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CARTE -->
+
+            <div
+                id="map-step"
+                class="quiz-step"
+            >
+
+                <p class="question-help">
+                    Le pays est indiqué en rouge.
+                    Quel est son nom ?
+                </p>
+
+
+                <div
+                    id="map"
+                    class="map"
+                >
+
+                    <div class="map-placeholder">
+                        <span>⏳</span>
+                        <p>Chargement de la carte…</p>
+                    </div>
+
+                </div>
+
+
+                <div class="answer-area">
+
+                    <input
+                        id="country-input"
+                        type="text"
+                        placeholder="Entre le nom du pays..."
+                        autocomplete="off"
+                    >
+
+
+                    <button
+                        id="country-submit"
+                        class="validate-button"
+                    >
+                        Valider
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="country-feedback"
+                    class="feedback"
+                ></div>
+
+            </div>
+
+
+
+            <!-- DRAPEAU -->
+
+            <div
+                id="flag-step"
+                class="quiz-step hidden"
+            >
+
+                <div class="country-name">
+
+                    <span>🏳️</span>
+
+                    <strong
+                        id="flag-country-name"
+                    ></strong>
+
+                </div>
+
+
+                <p class="question-help">
+                    Quel est le drapeau de ce pays ?
+                </p>
+
+
+                <div
+                    id="flag-options"
+                    class="options flag-options"
+                ></div>
+
+
+                <div
+                    id="flag-feedback"
+                    class="feedback"
+                ></div>
+
+            </div>
+
+
+
+            <!-- CHEF D'ÉTAT -->
+
+            <div
+                id="leader-step"
+                class="quiz-step hidden"
+            >
+
+                <div class="country-name">
+
+                    <span>👤</span>
+
+                    <strong
+                        id="leader-country-name"
+                    ></strong>
+
+                </div>
+
+
+                <p class="question-help">
+                    Qui est le chef d'État de ce pays ?
+                </p>
+
+
+                <div
+                    id="leader-options"
+                    class="options"
+                ></div>
+
+
+                <div
+                    id="leader-feedback"
+                    class="feedback"
+                ></div>
+
+            </div>
+
+
+
+            <!-- CAPITALE -->
+
+            <div
+                id="capital-step"
+                class="quiz-step hidden"
+            >
+
+                <div class="country-name">
+
+                    <span>🏛️</span>
+
+                    <strong
+                        id="capital-country-name"
+                    ></strong>
+
+                </div>
+
+
+                <p class="question-help">
+                    Quelle est la capitale de ce pays ?
+                </p>
+
+
+                <div
+                    id="capital-options"
+                    class="options"
+                ></div>
+
+
+                <div
+                    id="capital-feedback"
+                    class="feedback"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         RESULTATS
+         ========================= -->
+
+    <section
+        id="result-screen"
+        class="screen"
+    >
+
+        <div class="result-card">
+
+            <div class="result-badge">
+                PARTIE TERMINÉE
+            </div>
+
+
+            <div class="result-trophy">
+                🏆
+            </div>
+
+
+            <h2>
+                Bravo !
+            </h2>
+
+
+            <p class="result-subtitle">
+                Voici ton résultat.
+            </p>
+
+
+            <div class="big-score">
+
+                <strong id="final-score">
+                    0
+                </strong>
+
+                <span>/<span id="result-total">40</span></span>
+
+            </div>
+
+
+            <p
+                id="result-message"
+                class="result-message"
+            ></p>
+
+
+            <div class="result-grid">
+
+                <div class="result-stat">
+                    <span>🗺️</span>
+                    <strong id="country-score">0</strong>
+                    <small>Pays</small>
+                </div>
+
+
+                <div class="result-stat">
+                    <span>🏳️</span>
+                    <strong id="flag-score">0</strong>
+                    <small>Drapeaux</small>
+                </div>
+
+
+                <div class="result-stat">
+                    <span>👤</span>
+                    <strong id="leader-score">0</strong>
+                    <small>Chefs d'État</small>
+                </div>
+
+
+                <div class="result-stat">
+                    <span>🏛️</span>
+                    <strong id="capital-score">0</strong>
+                    <small>Capitales</small>
+                </div>
+
+            </div>
+
+
+            <div
+                id="mistakes-container"
+                class="mistakes"
+            ></div>
+
+
+            <button
+                id="restart-button"
+                class="main-button"
+            >
+                Rejouer
+                <span>↻</span>
+            </button>
+
+
+            <button
+                id="home-button"
+                class="secondary-button"
+            >
+                Retour à l'accueil
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    <span>Revison R3</span>
+
+    <span>•</span>
+
+    <span>
+        Outil personnel de révision
+    </span>
+
+</footer>
+
+
+<!-- Leaflet -->
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
+<!-- Notre programme -->
+<script src="script.js"></script>
+
+
+</body>
+
+</html>
