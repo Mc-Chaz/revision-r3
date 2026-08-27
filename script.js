@@ -16,7 +16,7 @@ let stage = 1;
    BASE DE DONNÉES
    ========================================================= */
 
-const COUNTRIES = [
+let COUNTRIES = [
 
     {
         iso2: "fr",
@@ -529,6 +529,55 @@ const COUNTRIES = [
 
 ];
 
+const COUNTRY_DATA_URL =
+    "https://raw.githubusercontent.com/mledoze/countries/master/countries.json";
+
+let countriesReady = Promise.resolve();
+
+function loadCompleteCountryDatabase() {
+    countriesReady = fetch(COUNTRY_DATA_URL, { cache: "force-cache" })
+        .then(response => {
+            if (!response.ok) throw new Error("Pays HTTP " + response.status);
+            return response.json();
+        })
+        .then(externalCountries => {
+            const existingByCode = new Map(
+                COUNTRIES.map(country => [country.iso2.toUpperCase(), country])
+            );
+
+            const completeCountries = externalCountries
+                .filter(country => country.unMember || ["VA", "PS"].includes(country.cca2))
+                .map(country => {
+                    const code = country.cca2.toUpperCase();
+                    const existing = existingByCode.get(code);
+                    if (existing) return existing;
+
+                    const frenchName = country.translations?.fra?.common || country.name.common;
+
+                    return {
+                        iso2: country.cca2.toLowerCase(),
+                        name: frenchName,
+                        aliases: [frenchName, country.name.common],
+                        capital: country.capital?.[0] || "Capitale à vérifier",
+                        leader: `À vérifier — ${frenchName}`
+                    };
+                });
+
+            if (completeCountries.length === 195) {
+                COUNTRIES = completeCountries;
+            } else {
+                console.warn(`Base distante incomplète : ${completeCountries.length}/195 pays.`);
+            }
+        })
+        .catch(error => {
+            console.warn("Base complète indisponible, utilisation des pays locaux :", error);
+        });
+
+    return countriesReady;
+}
+
+loadCompleteCountryDatabase();
+
 
 /* =========================================================
    ÉTAT
@@ -781,7 +830,7 @@ countryInput.addEventListener(
    DÉMARRER
    ========================================================= */
 
-function startGame() {
+async function startGame() {
 
     playerName = playerNameInput.value.trim();
     if (!playerName) {
@@ -793,6 +842,10 @@ function startGame() {
 
     playerNameFeedback.textContent = "";
     playerNameFeedback.className = "player-name-feedback";
+
+    await countriesReady;
+    renderDatabase();
+
     gameId++;
     document.body.classList.add("quiz-mode-active");
     GAME_MODE = gameModeSelect.value;
@@ -2277,4 +2330,5 @@ function renderCourses() {
 
 loadBestScore();
 renderDatabase();
+countriesReady.then(renderDatabase);
 renderLeaderboard(leaderboardHome);
